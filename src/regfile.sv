@@ -66,7 +66,7 @@ module regfile(data_in, writenum, write, readnum, clk, data_out);
 			`Select_5: data_out = R5;
 			`Select_6: data_out = R6;
 			`Select_7: data_out = R7;
-			default: data_out = 15'bx;
+			default: data_out = 16'bx;
 		endcase
 	end
 
