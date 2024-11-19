@@ -879,6 +879,8 @@ module datapath_tb;
             err = 1'b1;
         end
 
+        sim_shift = `NONE;
+
 
         //Store in R7
         sim_clk = 1'b0;
@@ -999,6 +1001,8 @@ module datapath_tb;
             err = 1'b1;
         end
 
+        sim_shift = `NONE;
+
 
         //Store in R7
         sim_clk = 1'b0;
@@ -1095,6 +1099,8 @@ module datapath_tb;
             $display("Fail: Test 52, Expected: %b, actual: %b", 1'b0, sim_V_out);
             err = 1'b1;
         end
+
+        sim_shift = `NONE;
 
 
         //Store in R6
@@ -1231,9 +1237,9 @@ module datapath_tb;
 
 
         #1;
-        assert (sim_N_out === 1'b1) $display("SUCCESS ** N is %b, expected %b", sim_N_out, 1'b1);
+        assert (sim_N_out === 1'b0) $display("SUCCESS ** N is %b, expected %b", sim_N_out, 1'b0);
         else begin 
-            $display("Fail: Test 58, Expected: %b, actual: %b", 1'b1, sim_N_out);
+            $display("Fail: Test 58, Expected: %b, actual: %b", 1'b0, sim_N_out);
             err = 1'b1;
         end
 
@@ -1259,12 +1265,11 @@ module datapath_tb;
         #1;
         sim_write = 1'b0;
         #1;
-        assert (DUT.REGFILE.R4 === -16'd4232) $display("SUCCESS ** R4 is %b, expected %b", DUT.REGFILE.R4, -16'd4232);
+        assert (DUT.REGFILE.R4 === 16'd28536) $display("SUCCESS ** R4 is %b, expected %b", DUT.REGFILE.R4, 16'd28536);
         else begin 
             $display("Fail: Test 60");
             err = 1'b1;
         end
-
 
 
 
@@ -1364,9 +1369,9 @@ module datapath_tb;
 
 
         #1;
-        assert (sim_datapath_out === 16'd232) $display("SUCCESS ** Datapath_out is %b, expected %b", sim_datapath_out, 16'd232);
+        assert (sim_datapath_out === -16'd32536) $display("SUCCESS ** Datapath_out is %b, expected %b", sim_datapath_out, -16'd32536);
         else begin 
-            $display("Fail: Test 63, Expected: %b, actual: %b", 16'd232, sim_datapath_out);
+            $display("Fail: Test 63, Expected: %b, actual: %b", -16'd32536, sim_datapath_out);
             err = 1'b1;
         end
 
@@ -1416,13 +1421,13 @@ module datapath_tb;
 
 
         //Overflow Subtraction - Too Positive
-        //Test 4: MOV R3, #-32770
+        //Test 4: MOV R3, #-32767
         //
         //
         sim_clk = 1'b0;
         #5;
 
-        sim_sximm8 = -16'd32770;
+        sim_sximm8 = -16'd32767;
         sim_vsel = 2'd2;
         sim_writenum = 3'd3;
         sim_write = 1'b1;
@@ -1432,20 +1437,20 @@ module datapath_tb;
         #1;
         sim_write = 1'b0;
         #1;
-        assert (DUT.REGFILE.R3 === -16'd32770) $display("SUCCESS ** R3 is %b, expected %b", DUT.REGFILE.R3, -16'd32770);
+        assert (DUT.REGFILE.R3 === -16'd32767) $display("SUCCESS ** R3 is %b, expected %b", DUT.REGFILE.R3, -16'd32767);
         else begin 
             $display("Fail: Test 68", DUT.REGFILE.R3);
             err = 1'b1;
         end
 
 
-        //Test 5: MOV R5, #-1
+        //Test 5: MOV R5, #5
         //
         //
         sim_clk = 1'b0;
         #5;
 
-        sim_sximm8 = -16'd1;
+        sim_sximm8 = 16'd5;
         sim_vsel = 2'd2;
         sim_writenum = 3'd5;
         sim_write = 1'b1;
@@ -1455,7 +1460,7 @@ module datapath_tb;
         #1;
         sim_write = 1'b0;
         #1;
-        assert (DUT.REGFILE.R5 === -16'd1) $display("SUCCESS ** R5 is %b, expected %b", DUT.REGFILE.R5, -16'd1);
+        assert (DUT.REGFILE.R5 === 16'd5) $display("SUCCESS ** R5 is %b, expected %b", DUT.REGFILE.R5, 16'd5);
         else begin 
             $display("Fail: Test 69");
             err = 1'b1;
@@ -1471,7 +1476,7 @@ module datapath_tb;
         #5;
 
 
-        sim_readnum = 3'd3; //store R3 into Load B
+        sim_readnum = 3'd5; //store R3 into Load B
         sim_loadb = 1'b1;
         #1; //Need this timer, otherwise too quick
 
@@ -1488,7 +1493,7 @@ module datapath_tb;
         sim_clk = 1'b0; //Cycle 2
         #5;
 
-        sim_readnum = 3'd5; //store R5 into Load A
+        sim_readnum = 3'd3; //store R5 into Load A
         sim_loada = 1'b1;
         #1;
         sim_clk = 1'b1;
@@ -1511,9 +1516,9 @@ module datapath_tb;
 
 
         #1;
-        assert (sim_datapath_out === 16'd32767) $display("SUCCESS ** Datapath_out is %b, expected %b", sim_datapath_out, 16'd32767);
+        assert (sim_datapath_out === 16'd32764) $display("SUCCESS ** Datapath_out is %b, expected %b", sim_datapath_out, 16'd32764);
         else begin 
-            $display("Fail: Test 70, Expected: %b, actual: %b", 16'd32767, sim_datapath_out);
+            $display("Fail: Test 70, Expected: %b, actual: %b", -16'd32764, sim_datapath_out);
             err = 1'b1;
         end
 
@@ -1555,9 +1560,158 @@ module datapath_tb;
         #1;
         sim_write = 1'b0;
         #1;
-        assert (DUT.REGFILE.R4 === 16'd32767) $display("SUCCESS ** R4 is %b, expected %b", DUT.REGFILE.R4, 16'd32767);
+        assert (DUT.REGFILE.R4 === 16'd32764) $display("SUCCESS ** R4 is %b, expected %b", DUT.REGFILE.R4, 16'd32764);
         else begin 
             $display("Fail: Test 75");
+            err = 1'b1;
+        end
+
+
+
+
+        //Overflow Subtraction - Too Negative
+        //Test 4: MOV R3, #32767
+        //
+        //
+        sim_clk = 1'b0;
+        #5;
+
+        sim_sximm8 = 16'd32767;
+        sim_vsel = 2'd2;
+        sim_writenum = 3'd3;
+        sim_write = 1'b1;
+        #1;
+        sim_clk = 1'b1;
+
+        #1;
+        sim_write = 1'b0;
+        #1;
+        assert (DUT.REGFILE.R3 === 16'd32767) $display("SUCCESS ** R3 is %b, expected %b", DUT.REGFILE.R3, 16'd32767);
+        else begin 
+            $display("Fail: Test 76", DUT.REGFILE.R3);
+            err = 1'b1;
+        end
+
+
+        //Test 5: MOV R5, #-1
+        //
+        //
+        sim_clk = 1'b0;
+        #5;
+
+        sim_sximm8 = -16'd1;
+        sim_vsel = 2'd2;
+        sim_writenum = 3'd5;
+        sim_write = 1'b1;
+        #1;
+        sim_clk = 1'b1;
+
+        #1;
+        sim_write = 1'b0;
+        #1;
+        assert (DUT.REGFILE.R5 === -16'd1) $display("SUCCESS ** R5 is %b, expected %b", DUT.REGFILE.R5, -16'd1);
+        else begin 
+            $display("Fail: Test 77");
+            err = 1'b1;
+        end
+
+
+        
+
+        //SUB R4, R5, R3
+        //
+        //
+        sim_clk = 1'b0; //Cycle 1
+        #5;
+
+
+        sim_readnum = 3'd5; //store R3 into Load B
+        sim_loadb = 1'b1;
+        #1; //Need this timer, otherwise too quick
+
+        sim_clk = 1'b1;
+        #1;
+
+        sim_loadb = 1'b0; //reset Load B to 0
+
+        sim_bsel = 1'b0;
+    
+        #1;
+        
+
+        sim_clk = 1'b0; //Cycle 2
+        #5;
+
+        sim_readnum = 3'd3; //store R5 into Load A
+        sim_loada = 1'b1;
+        #1;
+        sim_clk = 1'b1;
+        #1;
+        sim_loada = 1'b0; //reset Load A to 0
+        sim_asel = 1'b0;
+        #1;
+
+
+        sim_clk = 1'b0; //Cycle 3
+        #5;
+
+        sim_ALUop = `SUB; //ADD R3 and R5, then output
+        #1;
+
+        sim_loads = 1'b1;
+        sim_loadc = 1'b1;
+        #1;
+        sim_clk = 1'b1;
+
+
+        #1;
+        assert (sim_datapath_out === -16'd32768) $display("SUCCESS ** Datapath_out is %b, expected %b", sim_datapath_out, -16'd32768);
+        else begin 
+            $display("Fail: Test 78, Expected: %b, actual: %b", -16'd32768, sim_datapath_out);
+            err = 1'b1;
+        end
+
+
+        #1;
+        assert (sim_Z_out === 1'b0) $display("SUCCESS ** Z is %b, expected %b", sim_Z_out, 1'b0);
+        else begin 
+            $display("Fail: Test 79, Expected: %b, actual: %b", 1'b0, sim_Z_out);
+            err = 1'b1;
+        end
+
+
+        #1;
+        assert (sim_N_out === 1'b1) $display("SUCCESS ** N is %b, expected %b", sim_N_out, 1'b1);
+        else begin
+            $display("Fail: Test 80, Expected: %b, actual: %b", 1'b1, sim_N_out);
+            err = 1'b1;
+        end
+
+
+        #1;
+        assert (sim_V_out === 1'b1) $display("SUCCESS ** V is %b, expected %b", sim_V_out, 1'b1);
+        else begin 
+            $display("Fail: Test 81, Expected: %b, actual: %b", 1'b1, sim_V_out);
+            err = 1'b1;
+        end
+
+
+        //Store in R4
+        sim_clk = 1'b0;
+        #5;
+
+        sim_vsel = 2'd0;
+        sim_writenum = 3'd4;
+        sim_write = 1'b1;
+        #1;
+        sim_clk = 1'b1;
+
+        #1;
+        sim_write = 1'b0;
+        #1;
+        assert (DUT.REGFILE.R4 === -16'd32768) $display("SUCCESS ** R4 is %b, expected %b", DUT.REGFILE.R4, -16'd32768);
+        else begin 
+            $display("Fail: Test 82");
             err = 1'b1;
         end
 
