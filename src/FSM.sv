@@ -142,7 +142,7 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
             end
             // [nsel = 100, vsel = 10, write = 1]
             `S_MOV_IMM_RN: begin
-                nsel = 3'b100; // Rn
+                nsel = `SELECT_RN;
                 vsel = 2'b10; // immediate value
                 write = 1'b1; // write
                 loada = 1'b0;
@@ -154,7 +154,7 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
             end
             // [nsel = 100, loada = 1]
             `S_READ_RN: begin
-                nsel = 3'b100; // Rn
+                nsel = `SELECT_RN;
                 vsel = 2'bxx;
                 write = 1'b0;
                 loada = 1'b1; // load a
@@ -166,7 +166,7 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
             end
             // [nsel = 001, loadb = 1]
             `S_READ_RM: begin
-                nsel = 3'b001; // Rm
+                nsel = `SELECT_RM;
                 vsel = 2'bxx;
                 write = 1'b0;
                 loada = 1'b0;
@@ -202,7 +202,7 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
             end
             // [nsel = 010, write = 1]
             `S_WRITE_RD: begin
-                nsel = 3'b010; // Rd
+                nsel = `SELECT_RD;
                 vsel = 2'b00;
                 write = 1'b1; // write
                 loada = 1'b0;
