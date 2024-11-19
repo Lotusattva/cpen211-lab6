@@ -3,8 +3,6 @@
 // 3'b010: Rd (destination)
 // 3'b100: Rn (always load to a except for MOV imm)
 
-
-
 // opcode = 110, op = 10
 // MOV Rn,#<im8> -> directly write im8 to Rn
 // [nsel = 100, vsel = 10, write = 1]
@@ -31,6 +29,16 @@
 // MVN Rd,Rm{,<sh_op>} -> ~sh_Rm -> Rd
 // [nsel = 001, loadb = 1] -> [loadc = 1, asel = 1] -> [nsel = 010, write = 1]
 
+
+
+`define S_WAIT 3'd0
+`define S_MOV_IMM 3'd1 // [nsel = 100, vsel = 10, write = 1]
+`define S_READ_RN 3'd2 // [nsel = 100, loada = 1]
+`define S_READ_RM 3'd3 // [nsel = 001, loadb = 1]
+`define S_LOAD_C 3'd4 // [loadc = 1]
+`define S_LOAD_C_WITHOUT_RN 3'd5 // [loadc = 1, asel = 1]
+`define S_WRITE 3'd6 // [nsel = 010, write = 1]
+`define S_LOAD_STATUS 3'd7 // [loads = 1]
 
 
 // responsible for the control logic of the processor
