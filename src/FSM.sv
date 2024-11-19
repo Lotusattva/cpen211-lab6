@@ -33,14 +33,15 @@
 `define SELECT_RD 3'b010
 `define SELECT_RM 3'b001
 
-`define S_WAIT 3'd0              // everything set to 0
-`define S_MOV_IMM_RN 3'd1        // [nsel = 100, vsel = 10, write = 1]
-`define S_READ_RN 3'd2           // [nsel = 100, loada = 1]
-`define S_READ_RM 3'd3           // [nsel = 001, loadb = 1]
-`define S_LOAD_C 3'd4            // [loadc = 1]
-`define S_LOAD_C_WITHOUT_RN 3'd5 // [loadc = 1, asel = 1]
-`define S_WRITE_RD 3'd6          // [nsel = 010, write = 1]
-`define S_LOAD_STATUS 3'd7       // [loads = 1]
+`define S_WAIT 4'd0              // everything set to 0
+`define S_MOV_IMM_RN 4'd1        // [nsel = 100, vsel = 10, write = 1]
+`define S_READ_RN 4'd2           // [nsel = 100, loada = 1]
+`define S_READ_RM 4'd3           // [nsel = 001, loadb = 1]
+`define S_LOAD_C 4'd4            // [loadc = 1]
+`define S_LOAD_C_WITHOUT_RN 4'd5 // [loadc = 1, asel = 1]
+`define S_WRITE_RD 4'd6          // [nsel = 010, write = 1]
+`define S_LOAD_STATUS 4'd7       // [loads = 1]
+`define S_DECODE 4'd8            // wait for instruction
 
 `define INSTR_MOV_IMM 5'b11000
 `define INSTR_MOV 5'b11000
@@ -60,7 +61,7 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
     output wire [1:0] vsel;
     output wire [2:0] nsel;
 
-    reg [2:0] state;
+    reg [3:0] state;
 
     wire [4:0] instruction;
     assign instruction = {opcode, op};
@@ -77,18 +78,20 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
         else
             case (state)
                 `S_WAIT:
-                    if (s)
-                        if (instruction == `INSTR_MOV_IMM)
-                            state <= `S_MOV_IMM_RN;
-                        else if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
-                            state <= `S_READ_RM;
-                        else if (instruction == `INSTR_ADD || instruction == `INSTR_AND ||
-                                 instruction == `INSTR_CMP)
-                            state <= `S_READ_RN;
-                        else
-                            state <= `S_WAIT; // invalid instruction
+                    if(s)
+                        state <= `S_DECODE;
                     else
                         state <= `S_WAIT;
+                `S_DECODE:
+                    if (instruction == `INSTR_MOV_IMM)
+                        state <= `S_MOV_IMM_RN;
+                    else if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
+                        state <= `S_READ_RM;
+                    else if (instruction == `INSTR_ADD || instruction == `INSTR_AND ||
+                             instruction == `INSTR_CMP)
+                        state <= `S_READ_RN;
+                    else
+                        state <= `S_DECODE; // invalid instruction
 
                 `S_MOV_IMM_RN:
                     state <= `S_WAIT;
@@ -122,7 +125,7 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
 endmodule
 
 module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loads);
-    input [2:0] state;
+    input [3:0] state;
 
     output reg [2:0] nsel;
     output reg [1:0] vsel;
@@ -130,18 +133,6 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
 
     always_comb
         case (state)
-            // everything set to 0
-            `S_WAIT: begin
-                nsel = 3'bxxx;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b0;
-            end
             // [nsel = 100, vsel = 10, write = 1]
             `S_MOV_IMM_RN: begin
                 nsel = `SELECT_RN;
@@ -226,7 +217,7 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
                 loadc = 1'b0;
                 loads = 1'b1; // load status
             end
-
+            // S_WAIT and S_DECODE
             default: begin
                 nsel = 3'bxxx;
                 vsel = 2'bxx;
