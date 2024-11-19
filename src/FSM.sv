@@ -40,6 +40,12 @@
 `define S_WRITE_RD 3'd6 // [nsel = 010, write = 1]
 `define S_LOAD_STATUS 3'd7 // [loads = 1]
 
+`define INSTR_MOV_IMM 5'b11000
+`define INSTR_MOV 5'b11000
+`define INSTR_ADD 5'b10100
+`define INSTR_CMP 5'b10101
+`define INSTR_AND 5'b10110
+`define INSTR_MVN 5'b10111
 
 // responsible for the control logic of the processor
 module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loads);
@@ -47,15 +53,68 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
     input [1:0] op;
     input [2:0] opcode;
 
-    output reg w;
+    output w;
     output wire write, loada, loadb, asel, bsel, loadc, loads;
     output wire [1:0] vsel;
     output wire [2:0] nsel;
 
     reg [2:0] state;
+
+    wire [4:0] instruction;
+    assign instruction = {opcode, op};
+
     controller CONTROLLER(.state(state), .nsel(nsel), .vsel(vsel), .write(write), .loada(loada),
         .loadb(loadb), .asel(asel), .bsel(bsel), .loadc(loadc), .loads(loads));
 
+    assign w = (state == `S_WAIT) ? 1'b1 : 1'b0;
+
+    always_ff @(posedge clk)
+        if (reset)
+            state <= `S_WAIT;
+
+        else
+            case (state)
+                `S_WAIT:
+                    if (s)
+                        if (instruction == `INSTR_MOV_IMM)
+                            state <= `S_MOV_IMM_RN;
+                        else if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
+                            state <= `S_READ_RM;
+                        else if (instruction == `INSTR_ADD || instruction == `INSTR_AND ||
+                                instruction == `INSTR_CMP)
+                            state <= `S_READ_RN;
+                        else
+                            state <= `S_WAIT;
+
+                `S_MOV_IMM_RN:
+                    state <= `S_WAIT;
+
+                `S_READ_RN:
+                    state <= `S_READ_RM;
+
+                `S_READ_RM:
+                    if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
+                        state <= `S_LOAD_C_WITHOUT_RN;
+                    else if (instruction == `INSTR_ADD || instruction == `INSTR_AND)
+                        state <= `S_LOAD_C;
+                    else if (instruction == `INSTR_CMP)
+                        state <= `S_LOAD_STATUS;
+
+                `S_LOAD_C:
+                    state <= `S_WRITE_RD;
+
+                `S_LOAD_C_WITHOUT_RN:
+                    state <= `S_WRITE_RD;
+
+                `S_WRITE_RD:
+                    state <= `S_WAIT;
+
+                `S_LOAD_STATUS:
+                    state <= `S_WAIT;
+
+                default:
+                    state <= `S_WAIT;
+            endcase
 endmodule
 
 module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loads);
