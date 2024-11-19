@@ -29,16 +29,18 @@
 // MVN Rd,Rm{,<sh_op>} -> ~sh_Rm -> Rd
 // [nsel = 001, loadb = 1] -> [loadc = 1, asel = 1] -> [nsel = 010, write = 1]
 
+`define SELECT_RN 3'b100
+`define SELECT_RD 3'b010
+`define SELECT_RM 3'b001
 
-
-`define S_WAIT 3'd0 // everything set to 0
-`define S_MOV_IMM_RN 3'd1 // [nsel = 100, vsel = 10, write = 1]
-`define S_READ_RN 3'd2 // [nsel = 100, loada = 1]
-`define S_READ_RM 3'd3 // [nsel = 001, loadb = 1]
-`define S_LOAD_C 3'd4 // [loadc = 1]
+`define S_WAIT 3'd0              // everything set to 0
+`define S_MOV_IMM_RN 3'd1        // [nsel = 100, vsel = 10, write = 1]
+`define S_READ_RN 3'd2           // [nsel = 100, loada = 1]
+`define S_READ_RM 3'd3           // [nsel = 001, loadb = 1]
+`define S_LOAD_C 3'd4            // [loadc = 1]
 `define S_LOAD_C_WITHOUT_RN 3'd5 // [loadc = 1, asel = 1]
-`define S_WRITE_RD 3'd6 // [nsel = 010, write = 1]
-`define S_LOAD_STATUS 3'd7 // [loads = 1]
+`define S_WRITE_RD 3'd6          // [nsel = 010, write = 1]
+`define S_LOAD_STATUS 3'd7       // [loads = 1]
 
 `define INSTR_MOV_IMM 5'b11000
 `define INSTR_MOV 5'b11000
@@ -64,7 +66,7 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
     assign instruction = {opcode, op};
 
     controller CONTROLLER(.state(state), .nsel(nsel), .vsel(vsel), .write(write), .loada(loada),
-        .loadb(loadb), .asel(asel), .bsel(bsel), .loadc(loadc), .loads(loads));
+                          .loadb(loadb), .asel(asel), .bsel(bsel), .loadc(loadc), .loads(loads));
 
     assign w = (state == `S_WAIT) ? 1'b1 : 1'b0;
 
@@ -81,7 +83,7 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
                         else if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
                             state <= `S_READ_RM;
                         else if (instruction == `INSTR_ADD || instruction == `INSTR_AND ||
-                                instruction == `INSTR_CMP)
+                                 instruction == `INSTR_CMP)
                             state <= `S_READ_RN;
                         else
                             state <= `S_WAIT; // invalid instruction
@@ -195,7 +197,7 @@ module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loa
                 write = 1'b0;
                 loada = 1'b0;
                 loadb = 1'b0;
-                asel = 1'b1; // asel
+                asel = 1'b1;  // asel
                 bsel = 1'b0;
                 loadc = 1'b1; // load c
                 loads = 1'b0;
