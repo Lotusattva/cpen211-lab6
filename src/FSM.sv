@@ -116,7 +116,7 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
                     state <= `S_WAIT;
 
                 default:
-                    state <= `S_WAIT;
+                    state <= `S_WAIT; // invalid state
             endcase
 endmodule
 
