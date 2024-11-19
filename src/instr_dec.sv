@@ -1,53 +1,49 @@
-module instr_dec(in, nsel, ALUop, sximm5, sximm8, shift, readnum, writenum, opcode, op);
+`define SELECT_RN 3'b100
+`define SELECT_RD 3'b010
+`define SELECT_RM 3'b001
+
+`define Rn 8
+`define Rd 5
+`define Rm 0
+
+`define sh 3
+`define op 11
+`define opcode 13
+
+
+// responsible for selecting the read and write address, setting sximm8,
+// and passing shift and ALU command to datapath
+module instr_dec(in, clk, opcode, op, nsel, readnum, writenum, sximm8, shift, ALUop);
+    input clk;
     input [15:0] in;
-    input [1:0] nsel;
+    input [2:0] nsel;
 
-    output [1:0] ALUop;
-    output [15:0] sximm5;
+    output [2:0] opcode, readnum, writenum;
+    output [1:0] op, shift, ALUop;
     output [15:0] sximm8;
-    output [1:0] shift;
-    output [3:0] readnum, writenum;
-    output [2:0] opcode;
-    output [1:0] op;
 
-
-    reg [3:0] readnum, writenum;
-
-
-    assign opcode = in[15:13];
-    assign op = in[12:11];
-    assign ALUop = in[12:11];
-
-
-    assign sximm5 = {{11{in[4]}}, in[4:0]};
-    assign sximm8 = {{8{in[7]}}, in[7:0]};
-
-    assign shift = in[4:3];
-
-
-    always_comb begin
+    reg [2:0] readnum, writenum;
+    always_ff @(posedge clk) begin
         case (nsel)
-            2'b00: begin
-                readnum = in[10:8];
-                writenum = in[10:8];
+            `SELECT_RN: begin
+                readnum <= in[`Rn+2:`Rn];
+                writenum <= in[`Rn+2:`Rn];
             end
-
-            2'b01: begin
-                readnum = in[7:5];
-                writenum = in[7:5];
+            `SELECT_RD: begin
+                readnum <= in[`Rd+2:`Rd];
+                writenum <= in[`Rd+2:`Rd];
             end
-
-            2'b10: begin
-                readnum = in[2:0];
-                writenum = in[2:0];
-            end
-
-            default: begin
-                readnum = 3'bx;
-                writenum = 3'bx;
+            `SELECT_RM: begin
+                readnum <= in[`Rm+2:`Rm];
+                writenum <= in[`Rm+2:`Rm];
             end
         endcase
     end
 
+    assign sximm8 = {{8{in[7]}}, in[7:0]};
 
+    assign opcode = in[`opcode+2:`opcode];
+    assign ALUop = in[`op+1:`op];
+    assign op = in[`op+1:`op];
+    assign shift = in[`sh+1:`sh];
 endmodule
