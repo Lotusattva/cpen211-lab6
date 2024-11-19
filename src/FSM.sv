@@ -43,7 +43,7 @@
 `define S_LOAD_STATUS 4'd7       // [loads = 1]
 `define S_DECODE 4'd8            // wait for instruction
 
-`define INSTR_MOV_IMM 5'b11000
+`define INSTR_MOV_IMM 5'b11010
 `define INSTR_MOV 5'b11000
 `define INSTR_ADD 5'b10100
 `define INSTR_CMP 5'b10101
