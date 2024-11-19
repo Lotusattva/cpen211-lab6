@@ -75,7 +75,7 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
         else
             case (state)
                 `S_WAIT:
-                    if (s) begin
+                    if (s)
                         if (instruction == `INSTR_MOV_IMM)
                             state <= `S_MOV_IMM_RN;
                         else if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
@@ -85,7 +85,6 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
                             state <= `S_READ_RN;
                         else
                             state <= `S_WAIT; // invalid instruction
-                    end
                     else
                         state <= `S_WAIT;
 
