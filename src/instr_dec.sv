@@ -13,8 +13,7 @@
 
 // responsible for selecting the read and write address, setting sximm8,
 // and passing shift and ALU command to datapath
-module instr_dec(in, clk, opcode, op, nsel, readnum, writenum, sximm8, shift, ALUop);
-    input clk;
+module instr_dec(in, opcode, op, nsel, readnum, writenum, sximm8, shift, ALUop);
     input [15:0] in;
     input [2:0] nsel;
 
@@ -23,23 +22,23 @@ module instr_dec(in, clk, opcode, op, nsel, readnum, writenum, sximm8, shift, AL
     output [15:0] sximm8;
 
     reg [2:0] readnum, writenum;
-    always_ff @(posedge clk) begin
+    always_comb begin
         case (nsel)
             `SELECT_RN: begin
-                readnum <= in[`Rn+2:`Rn];
-                writenum <= in[`Rn+2:`Rn];
+                readnum = in[`Rn+2:`Rn];
+                writenum = in[`Rn+2:`Rn];
             end
             `SELECT_RD: begin
-                readnum <= in[`Rd+2:`Rd];
-                writenum <= in[`Rd+2:`Rd];
+                readnum = in[`Rd+2:`Rd];
+                writenum = in[`Rd+2:`Rd];
             end
             `SELECT_RM: begin
-                readnum <= in[`Rm+2:`Rm];
-                writenum <= in[`Rm+2:`Rm];
+                readnum = in[`Rm+2:`Rm];
+                writenum = in[`Rm+2:`Rm];
             end
             default: begin
-                readnum <= 3'bxxx;
-                writenum <= 3'bxxx;
+                readnum = 3'bxxx;
+                writenum = 3'bxxx;
             end
         endcase
     end
