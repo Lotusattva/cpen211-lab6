@@ -37,6 +37,10 @@ module instr_dec(in, clk, opcode, op, nsel, readnum, writenum, sximm8, shift, AL
                 readnum <= in[`Rm+2:`Rm];
                 writenum <= in[`Rm+2:`Rm];
             end
+            default: begin
+                readnum <= 3'bxxx;
+                writenum <= 3'bxxx;
+            end
         endcase
     end
 
