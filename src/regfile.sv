@@ -14,13 +14,13 @@ module regfile(data_in, writenum, write, readnum, clk, data_out);
 	input [2:0] writenum, readnum;
 	input write, clk;
 	output [15:0] data_out;
-	
+
 	reg [15:0] data_in;
 	reg [15:0] data_out;
-	
+
 	wire [7:0] write_out; //output of 3:8 write decoder
 	decoder #(3, 8) writeDecoder(writenum, write_out);
-	
+
 	//Load Enable
 	wire in0 = write & write_out[0];
 	wire in1 = write & write_out[1];
@@ -30,8 +30,8 @@ module regfile(data_in, writenum, write, readnum, clk, data_out);
 	wire in5 = write & write_out[5];
 	wire in6 = write & write_out[6];
 	wire in7 = write & write_out[7];
-	
-	
+
+
 	//Output of load enable registers
 	wire [15:0] R0;
 	wire [15:0] R1;
@@ -41,21 +41,21 @@ module regfile(data_in, writenum, write, readnum, clk, data_out);
 	wire [15:0] R5;
 	wire [15:0] R6;
 	wire [15:0] R7;
-	
+
 	//Create load enable for all registers
-	loadEnable #(`bus_width) load0(.clk(clk), .en(in0), .in(data_in), .out(R0));
-	loadEnable #(`bus_width) load1(.clk(clk), .en(in1), .in(data_in), .out(R1));
-	loadEnable #(`bus_width) load2(.clk(clk), .en(in2), .in(data_in), .out(R2));
-	loadEnable #(`bus_width) load3(.clk(clk), .en(in3), .in(data_in), .out(R3));
-	loadEnable #(`bus_width) load4(.clk(clk), .en(in4), .in(data_in), .out(R4));
-	loadEnable #(`bus_width) load5(.clk(clk), .en(in5), .in(data_in), .out(R5));
-	loadEnable #(`bus_width) load6(.clk(clk), .en(in6), .in(data_in), .out(R6));
-	loadEnable #(`bus_width) load7(.clk(clk), .en(in7), .in(data_in), .out(R7));
-	
+	vDFFE #(`bus_width) load0(.clk(clk), .en(in0), .in(data_in), .out(R0));
+	vDFFE #(`bus_width) load1(.clk(clk), .en(in1), .in(data_in), .out(R1));
+	vDFFE #(`bus_width) load2(.clk(clk), .en(in2), .in(data_in), .out(R2));
+	vDFFE #(`bus_width) load3(.clk(clk), .en(in3), .in(data_in), .out(R3));
+	vDFFE #(`bus_width) load4(.clk(clk), .en(in4), .in(data_in), .out(R4));
+	vDFFE #(`bus_width) load5(.clk(clk), .en(in5), .in(data_in), .out(R5));
+	vDFFE #(`bus_width) load6(.clk(clk), .en(in6), .in(data_in), .out(R6));
+	vDFFE #(`bus_width) load7(.clk(clk), .en(in7), .in(data_in), .out(R7));
+
 	wire [7:0] read_out; //output of 3:8 read decoder
 	decoder #(3, 8) readDecoder(.a(readnum), .b(read_out));
-	
-	
+
+
 	always_comb begin
 		case (read_out)
 			`Select_0: data_out = R0;
@@ -69,5 +69,5 @@ module regfile(data_in, writenum, write, readnum, clk, data_out);
 			default: data_out = 15'bx;
 		endcase
 	end
-	
+
 endmodule

@@ -6,75 +6,75 @@
 
 `define TRUE 16'b0000000000000000
 
-module ALU(Ain, Bin, ALUop, out, Z);
+module ALU(Ain, Bin, ALUop, out, status);
 	input [15:0] Ain, Bin;
 	input [1:0] ALUop;
 	output [15:0] out;
-	output [2:0] Z;
-	
+	output [2:0] status;
+
 	reg [15:0] out;
-	reg [2:0] Z;
-	
-	
+	reg [2:0] status;
+
+
 	always_comb begin
 		case (ALUop)
 			`ADD: out = Ain + Bin;
-			
+
 			`SUB: out = Ain - Bin;
-			
+
 			`AND_OP: out = Ain & Bin;
-			
+
 			`NOT_OP: out = ~Bin;
-			
+
 			default: out = 16'bx;
-			
+
 		endcase
 	end
-	
-	
+
+
 	//Status register [2:0] Z
 	// 0: Negative flag, N
 	// 1: Overflow flag, V
 	// 2: Zero flag, Z
 	always_comb begin
 		case (out[15]) //Negative flag, N
-			1'b1: Z[0] = 1'b1;
+			1'b1: status[0] = 1'b1;
 
-			default: Z[0] = 1'b0;
+			default: status[0] = 1'b0;
 		endcase
 
 		case(ALUop)
 			`ADD: begin //Z[1] = (Ain[15] & Bin[15] & ~out[15]) | (~Ain[15] & ~Bin[15] & out[15]);
 				if ((Ain[15] === Bin[15]) && (Ain[15] !== out[15])) begin
-					Z[1] = 1'b1;
+					status[1] = 1'b1;
 				end
 				else begin
-					Z[1] = 1'b0;
+					status[1] = 1'b0;
 				end
 			end
 
 			`SUB: begin //Z[1] = (Ain[15] & ~Bin[15] & ~out[15]) | (~Ain[15] & Bin[15] & out[15]);
 				if ((Ain[15] !== Bin[15]) && (Ain[15] !== out[15])) begin
-					Z[1] = 1'b1;
+					status[1] = 1'b1;
 				end
 
 				else begin
-					Z[1] = 1'b0;
+					status[1] = 1'b0;
 				end
 			end
 
-			default: Z[1] = 1'b0;
+			default: status[1] = 1'b0;
 
 		endcase
 
 
 		case (out) //zero flag, Z
-			`TRUE: Z[2] = 1'b1;
-			
-			default: Z[2] = 1'b0;
+			`TRUE: status[2] = 1'b1;
+
+			default: status[2] = 1'b0;
 		endcase
 	end
-	
 
-	
+
+
 endmodule

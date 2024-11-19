@@ -1,4 +1,4 @@
-module instructionDecoder(in, nsel, ALUop, sximm5, sximm8, shift, readnum, writenum, opcode, op);
+module instr_dec(in, nsel, ALUop, sximm5, sximm8, shift, readnum, writenum, opcode, op);
     input [15:0] in;
     input [1:0] nsel;
 

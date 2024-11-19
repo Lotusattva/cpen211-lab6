@@ -5,7 +5,7 @@ module cpu(clk, reset, s, load, in, out, N, V, Z, w);
     output N, V, Z, w;
 
     wire [15:0] instr_out;
-    loadEnable instruction_register(.clk(clk), .en(load), .in(in), .out(instr_out));
+    vDFFE instruction_register(.clk(clk), .en(load), .in(in), .out(instr_out));
 
     wire [1:0] ALUop;
     wire [15:0] sximm5;
@@ -17,7 +17,7 @@ module cpu(clk, reset, s, load, in, out, N, V, Z, w);
     wire [1:0] op;
     wire [1:0] nsel;
 
-    instructionDecoder instr_decode(.in(instr_out), .nsel(nsel), .ALUop(ALUop), .sximm5(sximm5), .sximm8(sximm8), .shift(shift), .readnum(readnum), .writenum(writenum), .opcode(opcode), .op(op));
+    instr_dec instr_decode(.in(instr_out), .nsel(nsel), .ALUop(ALUop), .sximm5(sximm5), .sximm8(sximm8), .shift(shift), .readnum(readnum), .writenum(writenum), .opcode(opcode), .op(op));
 
     stateMachine controller()
 
