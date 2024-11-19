@@ -31,13 +31,13 @@
 
 
 
-`define S_WAIT 3'd0
-`define S_MOV_IMM 3'd1 // [nsel = 100, vsel = 10, write = 1]
+`define S_WAIT 3'd0 // everything set to 0
+`define S_MOV_IMM_RN 3'd1 // [nsel = 100, vsel = 10, write = 1]
 `define S_READ_RN 3'd2 // [nsel = 100, loada = 1]
 `define S_READ_RM 3'd3 // [nsel = 001, loadb = 1]
 `define S_LOAD_C 3'd4 // [loadc = 1]
 `define S_LOAD_C_WITHOUT_RN 3'd5 // [loadc = 1, asel = 1]
-`define S_WRITE 3'd6 // [nsel = 010, write = 1]
+`define S_WRITE_RD 3'd6 // [nsel = 010, write = 1]
 `define S_LOAD_STATUS 3'd7 // [loads = 1]
 
 
@@ -47,7 +47,133 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
     input [1:0] op;
     input [2:0] opcode;
 
-    output w, write, loada, loadb, asel, bsel, loadc, loads;
-    output [1:0] vsel;
-    output [2:0] nsel;
+    output reg w;
+    output wire write, loada, loadb, asel, bsel, loadc, loads;
+    output wire [1:0] vsel;
+    output wire [2:0] nsel;
+
+    reg [2:0] state;
+    controller CONTROLLER(.state(state), .nsel(nsel), .vsel(vsel), .write(write), .loada(loada),
+        .loadb(loadb), .asel(asel), .bsel(bsel), .loadc(loadc), .loads(loads));
+
+endmodule
+
+module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loads);
+    input [2:0] state;
+
+    output reg [2:0] nsel;
+    output reg [1:0] vsel;
+    output reg write, loada, loadb, asel, bsel, loadc, loads;
+
+    always_comb
+        case (state)
+            // everything set to 0
+            `S_WAIT: begin
+                nsel = 3'bxxx;
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b0;
+            end
+            // [nsel = 100, vsel = 10, write = 1]
+            `S_MOV_IMM_RN: begin
+                nsel = 3'b100; // Rn
+                vsel = 2'b10; // immediate value
+                write = 1'b1; // write
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b0;
+            end
+            // [nsel = 100, loada = 1]
+            `S_READ_RN: begin
+                nsel = 3'b100; // Rn
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b1; // load a
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b0;
+            end
+            // [nsel = 001, loadb = 1]
+            `S_READ_RM: begin
+                nsel = 3'b001; // Rm
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b0;
+                loadb = 1'b1; // load b
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b0;
+            end
+            // [loadc = 1]
+            `S_LOAD_C: begin
+                nsel = 3'bxxx;
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b1; // load c
+                loads = 1'b0;
+            end
+            // [loadc = 1, asel = 1]
+            `S_LOAD_C_WITHOUT_RN: begin
+                nsel = 3'bxxx;
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b1; // asel
+                bsel = 1'b0;
+                loadc = 1'b1; // load c
+                loads = 1'b0;
+            end
+            // [nsel = 010, write = 1]
+            `S_WRITE_RD: begin
+                nsel = 3'b010; // Rd
+                vsel = 2'b00;
+                write = 1'b1; // write
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b0;
+            end
+            // [loads = 1]
+            `S_LOAD_STATUS: begin
+                nsel = 3'bxxx;
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b1; // load status
+            end
+
+            default: begin
+                nsel = 3'bxxx;
+                vsel = 2'bxx;
+                write = 1'b0;
+                loada = 1'b0;
+                loadb = 1'b0;
+                asel = 1'b0;
+                bsel = 1'b0;
+                loadc = 1'b0;
+                loads = 1'b0;
+            end
+        endcase
 endmodule
