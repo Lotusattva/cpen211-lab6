@@ -29,10 +29,6 @@
 // MVN Rd,Rm{,<sh_op>} -> ~sh_Rm -> Rd
 // [nsel = 001, loadb = 1] -> [loadc = 1, asel = 1] -> [nsel = 010, write = 1]
 
-`define SELECT_RN 3'b100
-`define SELECT_RD 3'b010
-`define SELECT_RM 3'b001
-
 `define S_WAIT 4'd0              // everything set to 0
 `define S_MOV_IMM_RN 4'd1        // [nsel = 100, vsel = 10, write = 1]
 `define S_READ_RN 4'd2           // [nsel = 100, loada = 1]
@@ -51,23 +47,18 @@
 `define INSTR_MVN 5'b10111
 
 // responsible for the control logic of the processor
-module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loads);
+module FSM(s, reset, clk, w, opcode, op, state);
     input s, reset, clk;
     input [1:0] op;
     input [2:0] opcode;
 
     output w;
-    output wire write, loada, loadb, asel, bsel, loadc, loads;
-    output wire [1:0] vsel;
-    output wire [2:0] nsel;
-
-    reg [3:0] state;
+    output reg [3:0] state;
 
     wire [4:0] instruction;
     assign instruction = {opcode, op};
 
-    controller CONTROLLER(.state(state), .nsel(nsel), .vsel(vsel), .write(write), .loada(loada),
-                          .loadb(loadb), .asel(asel), .bsel(bsel), .loadc(loadc), .loads(loads));
+
 
     assign w = (state == `S_WAIT) ? 1'b1 : 1'b0;
 
@@ -88,10 +79,10 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
                     else if (instruction == `INSTR_MOV || instruction == `INSTR_MVN)
                         state <= `S_READ_RM;
                     else if (instruction == `INSTR_ADD || instruction == `INSTR_AND ||
-                             instruction == `INSTR_CMP)
+                            instruction == `INSTR_CMP)
                         state <= `S_READ_RN;
                     else
-                        state <= `S_DECODE; // invalid instruction
+                        state <= `S_WAIT; // invalid instruction
 
                 `S_MOV_IMM_RN:
                     state <= `S_WAIT;
@@ -124,110 +115,3 @@ module FSM(s, reset, clk, w, opcode, op, nsel, vsel, write, loada, loadb, asel, 
             endcase
 endmodule
 
-module controller(state, nsel, vsel, write, loada, loadb, asel, bsel, loadc, loads);
-    input [3:0] state;
-
-    output reg [2:0] nsel;
-    output reg [1:0] vsel;
-    output reg write, loada, loadb, asel, bsel, loadc, loads;
-
-    always_comb
-        case (state)
-            // [nsel = 100, vsel = 10, write = 1]
-            `S_MOV_IMM_RN: begin
-                nsel = `SELECT_RN;
-                vsel = 2'b10; // immediate value
-                write = 1'b1; // write
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b0;
-            end
-            // [nsel = 100, loada = 1]
-            `S_READ_RN: begin
-                nsel = `SELECT_RN;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b1; // load a
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b0;
-            end
-            // [nsel = 001, loadb = 1]
-            `S_READ_RM: begin
-                nsel = `SELECT_RM;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b0;
-                loadb = 1'b1; // load b
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b0;
-            end
-            // [loadc = 1]
-            `S_LOAD_C: begin
-                nsel = 3'bxxx;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b1; // load c
-                loads = 1'b0;
-            end
-            // [loadc = 1, asel = 1]
-            `S_LOAD_C_WITHOUT_RN: begin
-                nsel = 3'bxxx;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b1;  // asel
-                bsel = 1'b0;
-                loadc = 1'b1; // load c
-                loads = 1'b0;
-            end
-            // [nsel = 010, write = 1]
-            `S_WRITE_RD: begin
-                nsel = `SELECT_RD;
-                vsel = 2'b00;
-                write = 1'b1; // write
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b0;
-            end
-            // [loads = 1]
-            `S_LOAD_STATUS: begin
-                nsel = 3'bxxx;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b1; // load status
-            end
-            // S_WAIT and S_DECODE
-            default: begin
-                nsel = 3'bxxx;
-                vsel = 2'bxx;
-                write = 1'b0;
-                loada = 1'b0;
-                loadb = 1'b0;
-                asel = 1'b0;
-                bsel = 1'b0;
-                loadc = 1'b0;
-                loads = 1'b0;
-            end
-        endcase
-endmodule

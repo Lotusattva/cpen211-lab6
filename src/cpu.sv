@@ -17,9 +17,11 @@ module cpu(clk, reset, s, load, in, out, N, V, Z, w);
     instr_dec instruction_decoder(.in(instr), .opcode(opcode), .op(op), .nsel(nsel), .readnum(readnum),
         .writenum(writenum), .sximm8(sximm8), .shift(shift), .ALUop(ALUop));
 
-    FSM state_machine(.s(s), .reset(reset), .clk(clk), .w(w), .opcode(opcode), .op(op), .nsel(nsel),
-        .vsel(vsel), .write(write), .loada(loada), .loadb(loadb), .asel(asel), .bsel(bsel),
-        .loadc(loadc), .loads(loads));
+        wire [3:0] state;
+    FSM state_machine(.s(s), .reset(reset), .clk(clk), .w(w), .opcode(opcode), .op(op), .state(state));
+
+    controller CONTROLLER(.state(state), .nsel(nsel), .vsel(vsel), .write(write), .loada(loada),
+        .loadb(loadb), .asel(asel), .bsel(bsel), .loadc(loadc), .loads(loads));
 
     wire [7:0] PC;
     wire [15:0] mdata, sximm5;
