@@ -1,0 +1,23 @@
+CONTRIBUTIONS
+
+COURSE: CPEN 211
+PROFESSOR: TOR AAMODT
+ASSIGNMENT: LAB 6
+STUDENTS: DANIEL LI, Jingwei Chen
+
+
+The following files were written and contributed by the following students:
+
+1. datapath.sv Modifications - Daniel Li (Modified Lab 5 Datapath module for Stage 1 changes)
+2. All submodules (eg. alu.sv, decoder.sv, regfile.sv, shifter.sv) - Daniel Li & Jingwei Chen (Both worked individually on Lab 5 and combined their modules for Lab 6)
+2. datapath_tb.sv - Daniel Li (Generated the testbench for testing new changes to the datapath.sv)
+3. cpu.sv Jingwei Chen (Wrote the CPU module and its components)
+4. cpu_tb.sv - Daniel Li (Created the testbench and generated .do files for the cpu module)
+5. FSM.sv - Jingwei Chen (Wrote the code for generating the FSM Controller)
+7. lab6_top.sv - Daniel Li (Wrote the code for displaying the HEX outputs)
+8. lab6_top.mpf - Daniel Li (Created the ModelSim project for testbenches)
+9. lab6_top.qsf - Jingwei Chen (Synthesized the modules and generated the .qsf)
+10. lab6_top.qpf - Jingwei Chen (Created the Quartus project file for synthesis)
+9. instr_dec.sv - Jingwei Chen (Created a separate instruction decoder for the cpu module)
+10. All .do files (eg. cpu_tb.do, cpu_tb_gate.do, datapath_tb.do) - Daniel Li (generated all wave files)
+11. lab6_top.vo - Daniel Li (generated the gate-level simulation file)
